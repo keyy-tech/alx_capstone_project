@@ -10,6 +10,17 @@ from .serializers import RestaurantsSerializers, MenuSerializers
 
 @extend_schema(tags=["restaurants"])
 class RestaurantListCreateView(GenericAPIView):
+    """
+    List and create restaurants owned by the authenticated user.
+
+    - GET returns all restaurants where owner == request.user.
+    - POST creates a new restaurant and assigns owner=request.user.
+
+    Methods:
+        get(request): Return list of restaurants for the user.
+        post(request): Create a new restaurant for the user.
+    """
+
     serializer_class = RestaurantsSerializers
     permission_classes = [permissions.IsAuthenticated]
 
@@ -17,6 +28,16 @@ class RestaurantListCreateView(GenericAPIView):
         return Restaurants.objects.filter(owner=self.request.user)
 
     def get(self, request):
+        """
+        Retrieve restaurants owned by the authenticated user.
+
+        Args:
+            request (rest_framework.request.Request): The incoming request.
+
+        Returns:
+            rest_framework.response.Response: JSON response with list of the
+            user's restaurants (HTTP 200).
+        """
         restaurants = self.get_queryset()
         serializer = self.serializer_class(restaurants, many=True)
         return Response(
@@ -29,6 +50,20 @@ class RestaurantListCreateView(GenericAPIView):
         )
 
     def post(self, request):
+        """
+        Create a new restaurant owned by the authenticated user.
+
+        Args:
+            request (rest_framework.request.Request): The incoming request.
+                Payload should match RestaurantsSerializers fields.
+
+        Returns:
+            rest_framework.response.Response: JSON response with created
+            restaurant data (HTTP 201).
+
+        Side effects:
+            Persists a new Restaurants record with owner=request.user.
+        """
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(owner=request.user)
@@ -44,10 +79,30 @@ class RestaurantListCreateView(GenericAPIView):
 
 @extend_schema(tags=["restaurants"])
 class RestaurantDetailView(GenericAPIView):
+    """
+    Retrieve, update, or delete a single restaurant owned by the user.
+
+    Methods:
+        get_object(): Return the restaurant object or raise 404.
+        patch(request, pk): Partially update the restaurant.
+        delete(request, pk): Delete the restaurant.
+    """
+
     serializer_class = RestaurantsSerializers
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        """
+        Return a Restaurants instance owned by the authenticated user.
+
+        Reads `self.kwargs['pk']` to identify the restaurant.
+
+        Returns:
+            Restaurants: The restaurant instance matching pk and owner.
+
+        Raises:
+            Http404 if the restaurant does not exist or is not owned by user.
+        """
         return get_object_or_404(
             Restaurants,
             pk=self.kwargs["pk"],
@@ -55,6 +110,21 @@ class RestaurantDetailView(GenericAPIView):
         )
 
     def patch(self, request, pk):
+        """
+        Partially update a restaurant owned by the authenticated user.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request with
+                partial fields to update.
+            pk (int): Path parameter for the restaurant primary key.
+
+        Returns:
+            rest_framework.response.Response: JSON response with updated
+            restaurant data (HTTP 200).
+
+        Side effects:
+            Updates fields on the Restaurants instance.
+        """
         restaurant = self.get_object()
         serializer = self.serializer_class(
             restaurant,
@@ -73,6 +143,20 @@ class RestaurantDetailView(GenericAPIView):
         )
 
     def delete(self, request, pk):
+        """
+        Delete a restaurant owned by the authenticated user.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request.
+            pk (int): Path parameter for the restaurant primary key.
+
+        Returns:
+            rest_framework.response.Response: JSON response with success
+            message and HTTP 204 status code.
+
+        Side effects:
+            Deletes the Restaurants instance from the database.
+        """
         restaurant = self.get_object()
         restaurant.delete()
         return Response(
@@ -83,10 +167,34 @@ class RestaurantDetailView(GenericAPIView):
 
 @extend_schema(tags=["menu"])
 class MenuCreateView(GenericAPIView):
+    """
+    Create menu items for a restaurant owned by the authenticated user.
+
+    Methods:
+        post(request, restaurant_pk): Create a menu item linked to a
+            restaurant owned by request.user.
+    """
+
     serializer_class = MenuSerializers
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, restaurant_pk):
+        """
+        Create a new Menu item for the specified restaurant.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request with
+                menu fields.
+            restaurant_pk (int): Path parameter for the parent restaurant.
+
+        Returns:
+            rest_framework.response.Response: JSON response with created
+            menu data (HTTP 201).
+
+        Side effects:
+            Persists a Menu record linked to the restaurant; raises 404 if
+            restaurant not found or not owned by the requester.
+        """
         restaurant = get_object_or_404(
             Restaurants,
             pk=restaurant_pk,
@@ -109,17 +217,53 @@ class MenuCreateView(GenericAPIView):
 
 @extend_schema(tags=["menu"])
 class MenuDetailView(GenericAPIView):
+    """
+    Retrieve, update, or delete a specific Menu item belonging to a
+    restaurant owned by the requester.
+
+    Methods:
+        get_object(): Return the Menu instance or raise 404.
+        patch(request, pk): Partially update the menu item.
+        delete(request, pk): Delete the menu item.
+    """
+
     serializer_class = MenuSerializers
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        """
+        Return a Menu instance that belongs to a restaurant owned by user.
+
+        Reads `self.kwargs['pk']` for the menu primary key.
+
+        Returns:
+            Menu: The menu instance matching pk and owned by user's restaurant.
+
+        Raises:
+            Http404 if not found or not owned by the user's restaurant.
+        """
         return get_object_or_404(
             Menu,
             pk=self.kwargs["pk"],
             restaurant__owner=self.request.user,
         )
 
-    def patch(self, request, pk):
+    def patch(self, request):
+        """
+        Partially update a Menu item.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request with
+                fields to update.
+
+
+        Returns:
+            rest_framework.response.Response: JSON response with updated
+            menu data (HTTP 200).
+
+        Side effects:
+            Updates fields on the Menu instance.
+        """
         menu = self.get_object()
         serializer = self.serializer_class(
             menu,
@@ -137,7 +281,20 @@ class MenuDetailView(GenericAPIView):
             status=status.HTTP_200_OK,
         )
 
-    def delete(self, request, pk):
+    def delete(self, request):
+        """
+        Delete a Menu item belonging to a restaurant owned by the requester.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request.
+
+        Returns:
+            rest_framework.response.Response: JSON response with success
+            message and HTTP 204 status code.
+
+        Side effects:
+            Deletes the Menu instance from the database.
+        """
         menu = self.get_object()
         menu.delete()
         return Response(

@@ -10,10 +10,37 @@ from cart.models import Cart
 
 @extend_schema(tags=["orders"], request=None)
 class OrderCreateView(GenericAPIView):
+    """
+    Place an order for the authenticated user using their cart contents.
+
+    This view converts the user's Cart and CartItems into an Order and
+    related OrderItem records, computes totals, and deletes the cart after
+    successfully placing the order.
+
+    Methods:
+        post(request): Create an Order from the authenticated user's Cart.
+    """
+
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        """
+        Create an Order from the authenticated user's Cart.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request from
+                an authenticated user.
+
+        Returns:
+            rest_framework.response.Response: JSON response containing the
+            created order data and HTTP 201 on success, or an error response
+            (HTTP 400) if the cart is empty.
+
+        Side effects:
+            Reads the Cart, creates Order and OrderItem records, and deletes
+            the Cart after successful order creation.
+        """
         if not Cart.objects.filter(user=self.request.user).exists():
             return Response(
                 {

@@ -8,10 +8,37 @@ from .serializers import BaseRegistrationSerializer, UserProfileSerializer
 
 @extend_schema(request=BaseRegistrationSerializer, tags=["users"])
 class RegisterCustomerView(CreateAPIView):
+    """
+    Register a new customer user.
+
+    Accepts user registration data and an optional `user_profile` object in
+    the request payload. Creates a new User with the `is_customer` flag set
+    and optionally creates an associated UserProfile.
+
+    Methods:
+        post(request): Validate and create a customer user (and profile).
+    """
+
     permission_classes = [AllowAny]
     serializer_class = BaseRegistrationSerializer
 
     def post(self, request, *args, **kwargs):
+        """
+        Create a new customer user and optional profile.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request. The
+                payload should include user fields expected by
+                BaseRegistrationSerializer. Optionally include
+                `user_profile` dict for profile creation.
+
+        Returns:
+            rest_framework.response.Response: JSON response with created
+            user data and profile data (HTTP 201) on success.
+
+        Side effects:
+            Creates a new User (is_customer=True) and possibly a UserProfile.
+        """
         # Extract profile data
         profile_data = request.data.pop("user_profile", None)
 
@@ -40,10 +67,36 @@ class RegisterCustomerView(CreateAPIView):
 
 @extend_schema(request=BaseRegistrationSerializer, tags=["users"])
 class RegisterOwnerView(CreateAPIView):
+    """
+    Register a new owner user.
+
+    Similar to RegisterCustomerView but sets the `is_owner` flag on the
+    created User. Optionally creates an associated UserProfile.
+
+    Methods:
+        post(request): Validate and create an owner user (and profile).
+    """
+
     permission_classes = [AllowAny]
     serializer_class = BaseRegistrationSerializer
 
     def post(self, request, *args, **kwargs):
+        """
+        Create a new owner user and optional profile.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request. The
+                payload should include user fields expected by
+                BaseRegistrationSerializer. Optionally include
+                `user_profile` dict for profile creation.
+
+        Returns:
+            rest_framework.response.Response: JSON response with created
+            user data and profile data (HTTP 201) on success.
+
+        Side effects:
+            Creates a new User (is_owner=True) and possibly a UserProfile.
+        """
         profile_data = request.data.pop("user_profile", None)
 
         # Create user
