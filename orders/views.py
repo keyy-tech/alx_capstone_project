@@ -8,7 +8,7 @@ from .serializers import OrderSerializer
 from cart.models import Cart
 
 
-@extend_schema(tags=["orders"],request=None)
+@extend_schema(tags=["orders"], request=None)
 class OrderCreateView(GenericAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
