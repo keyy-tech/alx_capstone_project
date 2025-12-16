@@ -13,7 +13,7 @@ class CartView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        cart, _ = Cart.objects.get_or_create(user=self.request.user)
+        cart, _ = Cart.objects.get_or_create(customer=self.request.user)
         return cart
 
     def get(self, request):
@@ -46,7 +46,7 @@ class CartItemCreateView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart, created = Cart.objects.get_or_create(customer=request.user)
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -79,7 +79,7 @@ class CartItemDeleteView(GenericAPIView):
     serializer_class = CartItemSerializer
 
     def delete(self, request, item_id):
-        cart = get_object_or_404(Cart, user=request.user)
+        cart = get_object_or_404(Cart, customer=request.user)
         cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
         cart_item.delete()
         return Response(
@@ -91,7 +91,7 @@ class CartItemDeleteView(GenericAPIView):
         )
 
     def patch(self, request, item_id):
-        cart = get_object_or_404(Cart, user=request.user)
+        cart = get_object_or_404(Cart, customer=request.user)
         cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
 
         quantity = request.data.get("quantity")

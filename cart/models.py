@@ -6,13 +6,13 @@ from users.models import User
 
 # Create your models here.
 class Cart(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    customer = models.OneToOneField(User, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     added_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.user.username
+        return self.customer.username
 
     def calculate_total_price(self):
         total = sum(item.cart_item_price() for item in self.items.all())
@@ -32,4 +32,4 @@ class CartItem(models.Model):
         return self.menu_item.price * self.quantity
 
     def __str__(self):
-        return f"{self.quantity} of {self.menu_item.name} in {self.cart.user.username}'s cart"
+        return f"{self.quantity} of {self.menu_item.name} in {self.cart.customer.username}'s cart"
