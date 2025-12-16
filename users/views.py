@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -5,8 +6,10 @@ from rest_framework import status
 from .serializers import BaseRegistrationSerializer, UserProfileSerializer
 
 
+@extend_schema(request=BaseRegistrationSerializer, tags=["users"])
 class RegisterCustomerView(CreateAPIView):
     permission_classes = [AllowAny]
+    serializer_class = BaseRegistrationSerializer
 
     def post(self, request, *args, **kwargs):
         # Extract profile data
@@ -35,8 +38,10 @@ class RegisterCustomerView(CreateAPIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(request=BaseRegistrationSerializer, tags=["users"])
 class RegisterOwnerView(CreateAPIView):
     permission_classes = [AllowAny]
+    serializer_class = BaseRegistrationSerializer
 
     def post(self, request, *args, **kwargs):
         profile_data = request.data.pop("user_profile", None)

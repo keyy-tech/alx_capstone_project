@@ -26,7 +26,7 @@ class CurrentUserSerializer(UserSerializer):
         ]
         read_only_fields = ["id", "date_joined", "updated_at"]
 
-    def get_role(self, obj):
+    def get_role(self, obj) -> "str":
         if obj.is_owner:
             return "owner"
         if obj.is_customer:

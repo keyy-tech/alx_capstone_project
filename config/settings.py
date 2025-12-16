@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "silk",
     "users.apps.UsersConfig",
+    "restaurants.apps.RestaurantsConfig",
+    "cart.apps.CartConfig",
 ]
 
 MIDDLEWARE = [

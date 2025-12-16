@@ -42,4 +42,6 @@ urlpatterns = [
     path("silk/", include("silk.urls", namespace="silk")),
     # Local Apps
     path("api/v1/", include("users.urls"), name="users"),
+    path("api/v1/", include("restaurants.urls"), name="restaurants"),
+    path("api/v1/", include("cart.urls"), name="cart"),
 ]
