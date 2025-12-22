@@ -1,0 +1,1536 @@
+openapi: 3.0.3
+info:
+  title: Multi Restaurant  API
+  version: 1.0.0
+  description: An application like bolt food but with multiple restaurants
+  contact:
+    name: Emmanuel Kotoka
+    email: emmanuelyayrakotoka@gmail.com
+paths:
+  /api/v1/cart/:
+    get:
+      operationId: api_v1_cart_retrieve
+      description: |-
+        Retrieve the authenticated user's cart.
+
+        Args:
+            request (rest_framework.request.Request): The incoming request.
+
+        Returns:
+            rest_framework.response.Response: JSON response containing the
+            serialized cart data and a success message (HTTP 200).
+      tags:
+      - cart
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
+    delete:
+      operationId: api_v1_cart_destroy
+      description: |-
+        Clear all items from the authenticated user's cart.
+
+        Args:
+            request (rest_framework.request.Request): The incoming request.
+
+        Returns:
+            rest_framework.response.Response: JSON response with a success
+            message (HTTP 200).
+
+        Side effects:
+            Deletes all CartItem records associated with the user's Cart.
+      tags:
+      - cart
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cart/items/:
+    post:
+      operationId: api_v1_cart_items_create
+      description: |-
+        Create or update a CartItem for the authenticated user's cart.
+
+        Args:
+            request (rest_framework.request.Request): The incoming request.
+                Expected payload: {"menu": <int>, "quantity": <int, optional>}.
+
+        Returns:
+            rest_framework.response.Response: JSON response containing the
+            serialized CartItem and a success message (HTTP 201).
+
+        Side effects:
+            Creates the user's Cart if it does not exist. Creates or updates
+            a CartItem and saves it to the database.
+      tags:
+      - cart-items
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItem'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CartItem'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CartItem'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+          description: ''
+  /api/v1/cart/items/{id}/:
+    patch:
+      operationId: api_v1_cart_items_partial_update
+      description: |-
+        Update the quantity of a CartItem in the authenticated user's cart.
+
+        Args:
+            request (rest_framework.request.Request): The incoming request.
+                Expected payload: {"quantity": <int>}.
+            item_id (int): The id of the CartItem to update (path parameter).
+
+        Returns:
+            rest_framework.response.Response: JSON response containing the
+            updated serialized CartItem and a success message (HTTP 200), or
+            an error response (HTTP 400) for invalid quantity input.
+
+        Side effects:
+            Modifies the CartItem.quantity and saves the object.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - cart-items
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCartItem'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCartItem'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCartItem'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+          description: ''
+    delete:
+      operationId: api_v1_cart_items_destroy
+      description: |-
+        Remove a CartItem from the authenticated user's cart.
+
+        Args:
+            request (rest_framework.request.Request): The incoming request.
+            item_id (int): The id of the CartItem to delete (path parameter).
+
+        Returns:
+            rest_framework.response.Response: JSON response with a success
+            message (HTTP 200).
+
+        Side effects:
+            Deletes the CartItem from the database.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - cart-items
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/jwt/create/:
+    post:
+      operationId: api_v1_jwt_create_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/v1/jwt/refresh/:
+    post:
+      operationId: api_v1_jwt_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/jwt/verify/:
+    post:
+      operationId: api_v1_jwt_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerify'
+          description: ''
+  /api/v1/menu/{id}/:
+    patch:
+      operationId: api_v1_menu_partial_update
+      description: |-
+        Partially update a Menu item.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request with
+                fields to update.
+
+
+        Returns:
+            rest_framework.response.Response: JSON response with updated
+            menu data (HTTP 200).
+
+        Side effects:
+            Updates fields on the Menu instance.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - menu
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMenuSerializers'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMenuSerializers'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMenuSerializers'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuSerializers'
+          description: ''
+    delete:
+      operationId: api_v1_menu_destroy
+      description: |-
+        Delete a Menu item belonging to a restaurant owned by the requester.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request.
+
+        Returns:
+            rest_framework.response.Response: JSON response with success
+            message and HTTP 204 status code.
+
+        Side effects:
+            Deletes the Menu instance from the database.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - menu
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/order/create/:
+    post:
+      operationId: api_v1_order_create_create
+      description: |-
+        Create an Order from the authenticated user's Cart.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request from
+                an authenticated user.
+
+        Returns:
+            rest_framework.response.Response: JSON response containing the
+            created order data and HTTP 201 on success, or an error response
+            (HTTP 400) if the cart is empty.
+
+        Side effects:
+            Reads the Cart, creates Order and OrderItem records, and deletes
+            the Cart after successful order creation.
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/register/customer/:
+    post:
+      operationId: api_v1_register_customer_create
+      description: |-
+        Create a new customer user and optional profile.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request. The
+                payload should include user fields expected by
+                BaseRegistrationSerializer. Optionally include
+                `user_profile` dict for profile creation.
+
+        Returns:
+            rest_framework.response.Response: JSON response with created
+            user data and profile data (HTTP 201) on success.
+
+        Side effects:
+            Creates a new User (is_customer=True) and possibly a UserProfile.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaseRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaseRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseRegistration'
+          description: ''
+  /api/v1/register/owner/:
+    post:
+      operationId: api_v1_register_owner_create
+      description: |-
+        Create a new owner user and optional profile.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request. The
+                payload should include user fields expected by
+                BaseRegistrationSerializer. Optionally include
+                `user_profile` dict for profile creation.
+
+        Returns:
+            rest_framework.response.Response: JSON response with created
+            user data and profile data (HTTP 201) on success.
+
+        Side effects:
+            Creates a new User (is_owner=True) and possibly a UserProfile.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaseRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaseRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseRegistration'
+          description: ''
+  /api/v1/restaurants/:
+    get:
+      operationId: api_v1_restaurants_retrieve
+      description: |-
+        Retrieve restaurants owned by the authenticated user.
+
+        Args:
+            request (rest_framework.request.Request): The incoming request.
+
+        Returns:
+            rest_framework.response.Response: JSON response with list of the
+            user's restaurants (HTTP 200).
+      tags:
+      - restaurants
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantsSerializers'
+          description: ''
+    post:
+      operationId: api_v1_restaurants_create
+      description: |-
+        Create a new restaurant owned by the authenticated user.
+
+        Args:
+            request (rest_framework.request.Request): The incoming request.
+                Payload should match RestaurantsSerializers fields.
+
+        Returns:
+            rest_framework.response.Response: JSON response with created
+            restaurant data (HTTP 201).
+
+        Side effects:
+            Persists a new Restaurants record with owner=request.user.
+      tags:
+      - restaurants
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestaurantsSerializers'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RestaurantsSerializers'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RestaurantsSerializers'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantsSerializers'
+          description: ''
+  /api/v1/restaurants/{id}/:
+    patch:
+      operationId: api_v1_restaurants_partial_update
+      description: |-
+        Partially update a restaurant owned by the authenticated user.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request with
+                partial fields to update.
+            pk (int): Path parameter for the restaurant primary key.
+
+        Returns:
+            rest_framework.response.Response: JSON response with updated
+            restaurant data (HTTP 200).
+
+        Side effects:
+            Updates fields on the Restaurants instance.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - restaurants
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRestaurantsSerializers'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRestaurantsSerializers'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRestaurantsSerializers'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantsSerializers'
+          description: ''
+    delete:
+      operationId: api_v1_restaurants_destroy
+      description: |-
+        Delete a restaurant owned by the authenticated user.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request.
+            pk (int): Path parameter for the restaurant primary key.
+
+        Returns:
+            rest_framework.response.Response: JSON response with success
+            message and HTTP 204 status code.
+
+        Side effects:
+            Deletes the Restaurants instance from the database.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - restaurants
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/restaurants/{restaurant_pk}/menu/:
+    post:
+      operationId: api_v1_restaurants_menu_create
+      description: |-
+        Create a new Menu item for the specified restaurant.
+
+        Args:
+            request (rest_framework.request.Request): Incoming request with
+                menu fields.
+            restaurant_pk (int): Path parameter for the parent restaurant.
+
+        Returns:
+            rest_framework.response.Response: JSON response with created
+            menu data (HTTP 201).
+
+        Side effects:
+            Persists a Menu record linked to the restaurant; raises 404 if
+            restaurant not found or not owned by the requester.
+      parameters:
+      - in: path
+        name: restaurant_pk
+        schema:
+          type: integer
+        required: true
+      tags:
+      - menu
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MenuSerializers'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MenuSerializers'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MenuSerializers'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuSerializers'
+          description: ''
+  /api/v1/users/:
+    get:
+      operationId: api_v1_users_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: api_v1_users_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaseRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaseRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseRegistration'
+          description: ''
+  /api/v1/users/{id}/:
+    get:
+      operationId: api_v1_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: api_v1_users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: api_v1_users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: api_v1_users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/users/activation/:
+    post:
+      operationId: api_v1_users_activation_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Activation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Activation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Activation'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activation'
+          description: ''
+  /api/v1/users/me/:
+    get:
+      operationId: api_v1_users_me_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+          description: ''
+    put:
+      operationId: api_v1_users_me_update
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrentUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CurrentUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CurrentUser'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+          description: ''
+    patch:
+      operationId: api_v1_users_me_partial_update
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+          description: ''
+    delete:
+      operationId: api_v1_users_me_destroy
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/users/resend_activation/:
+    post:
+      operationId: api_v1_users_resend_activation_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailReset'
+          description: ''
+  /api/v1/users/reset_email/:
+    post:
+      operationId: api_v1_users_reset_email_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailReset'
+          description: ''
+  /api/v1/users/reset_email_confirm/:
+    post:
+      operationId: api_v1_users_reset_email_confirm_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsernameResetConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UsernameResetConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UsernameResetConfirm'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsernameResetConfirm'
+          description: ''
+  /api/v1/users/reset_password/:
+    post:
+      operationId: api_v1_users_reset_password_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailReset'
+          description: ''
+  /api/v1/users/reset_password_confirm/:
+    post:
+      operationId: api_v1_users_reset_password_confirm_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRetype'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRetype'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRetype'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetConfirmRetype'
+          description: ''
+  /api/v1/users/set_email/:
+    post:
+      operationId: api_v1_users_set_email_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetUsername'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetUsername'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetUsername'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetUsername'
+          description: ''
+  /api/v1/users/set_password/:
+    post:
+      operationId: api_v1_users_set_password_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetPassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetPassword'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetPassword'
+          description: ''
+components:
+  schemas:
+    Activation:
+      type: object
+      properties:
+        uid:
+          type: string
+        token:
+          type: string
+      required:
+      - token
+      - uid
+    BaseRegistration:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          writeOnly: true
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+      required:
+      - email
+      - first_name
+      - last_name
+      - password
+    Cart:
+      type: object
+      properties:
+        total_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        cart_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+          readOnly: true
+        added_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - added_at
+      - cart_items
+      - total_price
+      - updated_at
+    CartItem:
+      type: object
+      properties:
+        cart:
+          type: integer
+        menu_item:
+          type: integer
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        added_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - added_at
+      - cart
+      - menu_item
+    CurrentUser:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        user_profile:
+          allOf:
+          - $ref: '#/components/schemas/UserProfile'
+          readOnly: true
+        role:
+          type: string
+          readOnly: true
+      required:
+      - email
+      - first_name
+      - last_name
+      - role
+      - user_profile
+    MenuSerializers:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        is_available:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - description
+      - name
+      - price
+      - updated_at
+    Order:
+      type: object
+      properties:
+        order_date:
+          type: string
+          format: date-time
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        order_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - order_date
+      - order_items
+      - status
+      - total_amount
+      - updated_at
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        menu_item:
+          type: integer
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - menu_item
+      - price
+      - quantity
+      - updated_at
+    PasswordResetConfirmRetype:
+      type: object
+      properties:
+        uid:
+          type: string
+        token:
+          type: string
+        new_password:
+          type: string
+        re_new_password:
+          type: string
+      required:
+      - new_password
+      - re_new_password
+      - token
+      - uid
+    PatchedCartItem:
+      type: object
+      properties:
+        cart:
+          type: integer
+        menu_item:
+          type: integer
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        added_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedCurrentUser:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        user_profile:
+          allOf:
+          - $ref: '#/components/schemas/UserProfile'
+          readOnly: true
+        role:
+          type: string
+          readOnly: true
+    PatchedMenuSerializers:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        is_available:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedRestaurantsSerializers:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        address:
+          type: string
+        phone_number:
+          type: string
+          maxLength: 20
+        menu:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuSerializers'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedUser:
+      type: object
+      properties:
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+    RestaurantsSerializers:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        address:
+          type: string
+        phone_number:
+          type: string
+          maxLength: 20
+        menu:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuSerializers'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - address
+      - created_at
+      - description
+      - menu
+      - name
+      - phone_number
+      - updated_at
+    SendEmailReset:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    SetPassword:
+      type: object
+      properties:
+        new_password:
+          type: string
+        current_password:
+          type: string
+      required:
+      - current_password
+      - new_password
+    SetUsername:
+      type: object
+      properties:
+        current_password:
+          type: string
+        new_email:
+          type: string
+          format: email
+          title: Email
+          maxLength: 255
+      required:
+      - current_password
+      - new_email
+    StatusEnum:
+      enum:
+      - PENDING
+      - PROCESSING
+      - COMPLETED
+      - CANCELLED
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `PROCESSING` - Processing
+        * `COMPLETED` - Completed
+        * `CANCELLED` - Cancelled
+    TokenObtainPair:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - email
+      - password
+      - refresh
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    TokenVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+    User:
+      type: object
+      properties:
+        first_name:
+          type: string
+          maxLength: 255
+        last_name:
+          type: string
+          maxLength: 255
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+      required:
+      - email
+      - first_name
+      - id
+      - last_name
+    UserProfile:
+      type: object
+      properties:
+        other_name:
+          type: string
+          maxLength: 255
+        date_of_birth:
+          type: string
+          format: date
+        phone_number:
+          type: string
+          maxLength: 10
+      required:
+      - date_of_birth
+      - other_name
+      - phone_number
+    UsernameResetConfirm:
+      type: object
+      properties:
+        new_email:
+          type: string
+          format: email
+          title: Email
+          maxLength: 255
+      required:
+      - new_email
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

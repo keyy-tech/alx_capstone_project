@@ -1,0 +1,113 @@
+### Register Customer Accounts
+POST http://127.0.0.1:8000/api/v1/register/
+Content-Type: application/json
+
+{
+  "email": "testuser@gmail.com",
+  "password": "testpassword@123",
+  "first_name": "test",
+  "last_name": "user",
+  "user_profile": {
+    "other_name": "test_profile",
+    "date_of_birth": "2019-08-24",
+    "phone_number": "0244018515"
+  }
+}
+
+
+### Register Restaurant Owner Accounts
+POST http://127.0.0.1:8000/api/v1/register/
+Content-Type: application/json
+
+{
+  "email": "testuser_owner@gmail.com",
+  "password": "test_owner_password@123",
+  "first_name": "test_owner",
+  "last_name": "user_owner",
+  "role": "owner",
+  "user_profile": {
+    "other_name": "test_profile_owner",
+    "date_of_birth": "2019-08-24",
+    "phone_number": "0244018515"
+  }
+}
+
+### Login User (Customer)
+POST http://127.0.0.1:8000/api/v1/jwt/create/
+Content-Type: application/json
+
+{
+  "email": "testuser@gmail.com",
+  "password": "testpassword@123"
+}
+
+
+### Login User (Restaurant Owner)
+POST http://127.0.0.1:8000/api/v1/jwt/create/
+Content-Type: application/json
+
+{
+  "email": "testuser_owner@gmail.com",
+  "password": "test_owner_password@123"
+}
+
+### Login User (Superuser/Admin)
+POST http://127.0.0.1:8000/api/v1/jwt/create/
+Content-Type: application/json
+
+{
+  "email": "emmanuelyayrakotoka@gmail.com",
+  "password": "keyy@123"
+}
+
+### Update A Customer to Restaurant Owner (Admin Only)
+PATCH http://127.0.0.1:8000/api/v1/update_role/3/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+    "role": "owner"
+}
+
+
+### Create Restaurant (Customer Only)
+POST http://127.0.0.1:8000/api/v1/restaurants/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+    "name": "Test Restaurant 1",
+    "address": "123 Test St, Test City",
+    "phone_number": "0244018515",
+    "description": "A test restaurant"
+}
+
+
+
+### List Restaurants (Customer Only)
+GET http://127.0.0.1:8000/api/v1/restaurants/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+### List Restaurants (Owner Only)
+GET http://127.0.0.1:8000/api/v1/restaurants/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+### Create Menu Item (Owner Only)
+POST http://127.0.0.1:8000/api/v1/restaurants/{{restaurant_pk}}/menu/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+    "name": "Test Menu Item",
+    "description": "A delicious test item",
+    "price": 9.99,
+    "availability": true
+}
+
+### List Menu Items (Owner Only)
+GET http://127.0.0.1:8000/api/v1/restaurants/{{restaurant_pk}}/menu/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+

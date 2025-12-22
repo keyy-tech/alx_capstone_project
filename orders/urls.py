@@ -3,5 +3,5 @@ from .views import OrderCreateView
 
 
 urlpatterns = [
-    path("create/", OrderCreateView.as_view(), name="order-create"),
+    path("order/create/", OrderCreateView.as_view(), name="order-create"),
 ]

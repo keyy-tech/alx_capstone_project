@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     "restaurants.apps.RestaurantsConfig",
     "cart.apps.CartConfig",
     "orders.apps.OrdersConfig",
+    "customer.apps.CustomerConfig",
 ]
 
 MIDDLEWARE = [
@@ -154,17 +156,35 @@ SPECTACULAR_SETTINGS = {
 
 
 DJOSER = {
+    # Use email as login field
     "LOGIN_FIELD": "email",
-    "PASSWORD_RESET_CONFIRM_URL": "http://localhost:8000/password/reset/confirm/{uid}/{token}",
-    "ACTIVATION_URL": "http://localhost:8000/activate/{uid}/{token}",
+    # URLs for emails
+    "PASSWORD_RESET_CONFIRM_URL": "password/reset/confirm/{uid}/{token}/",
+    "USERNAME_RESET_CONFIRM_URL": "reset-email/confirm/{uid}/{token}/",
+    "ACTIVATION_URL": "activate/{uid}/{token}/",
+    # Email behavior
     "SEND_ACTIVATION_EMAIL": True,
-    "PASSWORD_RESET_CONFIRM_RETYPE": True,
-    "PASSWORD_RETYPE": True,
     "SEND_CONFIRMATION_EMAIL": True,
     "PASSWORD_CHANGED_EMAIL_CONFIRMATION": True,
+    # Require retype for password reset/change
+    "PASSWORD_RESET_CONFIRM_RETYPE": True,
+    "PASSWORD_RETYPE": True,
+    # Custom serializers
     "SERIALIZERS": {
-        "user_create": "users.serializers.BaseRegistrationSerializer",
+        "user_create": "users.serializers.UserRegistrationSerializer",
         "user": "users.serializers.UserSerializer",
         "current_user": "users.serializers.CurrentUserSerializer",
     },
 }
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+}
+
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "Multi Restaurant <multi-restaurant@info.example.com>"

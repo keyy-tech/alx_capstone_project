@@ -5,13 +5,17 @@ from .manager import UserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    ROLE_CHOICES = [
+        ("owner", "Owner"),
+        ("customer", "Customer"),
+    ]
+
     email = models.EmailField(max_length=255, unique=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    is_customer = models.BooleanField(default=False)
-    is_owner = models.BooleanField(default=False)
+    role = models.CharField(max_length=25, default="customer", choices=ROLE_CHOICES)
     date_joined = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -24,7 +28,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="user_profile"
+    )
     other_name = models.CharField(max_length=255)
     date_of_birth = models.DateField()
     phone_number = models.CharField(max_length=10)

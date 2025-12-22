@@ -3,9 +3,13 @@ from . import views
 
 urlpatterns = [
     path(
-        "register/customer/",
+        "register/",
         views.RegisterCustomerView.as_view(),
         name="register_customer",
     ),
-    path("register/owner/", views.RegisterOwnerView.as_view(), name="register_owner"),
+    path(
+        "update_role/<str:user_id>/",
+        views.AdminUpdateRoleView.as_view(),
+        name="update_user_role",
+    ),
 ]

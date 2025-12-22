@@ -23,6 +23,7 @@ class RestaurantListCreateView(GenericAPIView):
 
     serializer_class = RestaurantsSerializers
     permission_classes = [permissions.IsAuthenticated]
+    queryset = Restaurants.objects.all()
 
     def get_queryset(self):
         return Restaurants.objects.filter(owner=self.request.user)
@@ -38,7 +39,16 @@ class RestaurantListCreateView(GenericAPIView):
             rest_framework.response.Response: JSON response with list of the
             user's restaurants (HTTP 200).
         """
-        restaurants = self.get_queryset()
+        restaurants = self.queryset
+        if not restaurants.exists():
+            return Response(
+                {
+                    "msg": "No restaurants found for this user",
+                    "data": [],
+                    "status": True,
+                },
+                status=status.HTTP_200_OK,
+            )
         serializer = self.serializer_class(restaurants, many=True)
         return Response(
             {
@@ -64,6 +74,24 @@ class RestaurantListCreateView(GenericAPIView):
         Side effects:
             Persists a new Restaurants record with owner=request.user.
         """
+        user = request.user
+        if not user.role == "owner":
+            return Response(
+                {
+                    "msg": "Only users with owner role can create restaurants",
+                    "status": False,
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        restaurants = self.get_queryset()
+        if restaurants.exists():
+            return Response(
+                {
+                    "msg": "You have already created a restaurant",
+                    "status": False,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(owner=request.user)
