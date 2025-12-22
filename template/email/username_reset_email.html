@@ -1,0 +1,13 @@
+{% block subject %}
+Username Reset Requested
+{% endblock %}
+
+{% block text_body %}
+{
+  "type": "username_reset",
+  "uid": "{{ uid }}",
+  "token": "{{ token }}",
+  "method": "POST",
+  "required_fields": ["uid", "token", "new_username"]
+}
+{% endblock %}

@@ -26,12 +26,6 @@ class UserRegistrationSerializer(UserCreateSerializer):
         model = User
         fields = ["email", "password", "first_name", "last_name"]
 
-    def create(self, validated_data):
-        user = super().create(validated_data)
-        user.is_active = True
-        user.save()
-        return user
-
 
 class AdminUpdateRoleSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,5 +1,5 @@
 from drf_spectacular.utils import extend_schema
-from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status, generics
@@ -12,6 +12,8 @@ from .serializers import (
 from django.core.mail import send_mail
 from django.conf import settings
 from .models import User
+from django.conf import settings
+from djoser import signals
 
 
 @extend_schema(
@@ -57,6 +59,11 @@ class RegisterCustomerView(CreateAPIView):
             user_serializer.is_valid(raise_exception=True)
             user = user_serializer.save()
 
+            if settings.DJOSER.get("SEND_ACTIVATION_EMAIL"):
+                user.is_active = False  # Deactivate account until it is confirmed
+                user.save()
+                print("User account set to inactive until email confirmation")
+
             # Create profile
             profile_response_data = None
             if profile_data:
@@ -64,6 +71,13 @@ class RegisterCustomerView(CreateAPIView):
                 profile_serializer.is_valid(raise_exception=True)
                 profile_serializer.save(user=user)
                 profile_response_data = profile_serializer.data
+
+            # Send signal for user registration
+            if settings.DJOSER.get("SEND_ACTIVATION_EMAIL"):
+                signals.user_registered.send(
+                    sender=self.__class__, user=user, request=request
+                )
+                print("Successfully sent user_registered signal")
 
         data = {
             "message": "Customer account created successfully",

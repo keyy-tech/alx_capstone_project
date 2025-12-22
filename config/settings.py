@@ -156,6 +156,7 @@ SPECTACULAR_SETTINGS = {
 
 
 DJOSER = {
+    "USER_CREATE_PASSWORD_RETYPE": True,
     # Use email as login field
     "LOGIN_FIELD": "email",
     # URLs for emails
@@ -175,6 +176,11 @@ DJOSER = {
         "user": "users.serializers.UserSerializer",
         "current_user": "users.serializers.CurrentUserSerializer",
     },
+    "EMAIL": {
+        "activation": "users.emails.CustomActivationEmail",
+        "password_reset": "users.emails.CustomPasswordResetEmail",
+        "username_reset": "users.emails.CustomUsernameResetEmail",
+    },
 }
 
 
@@ -188,3 +194,6 @@ SIMPLE_JWT = {
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "Multi Restaurant <multi-restaurant@info.example.com>"
+
+
+SITE_ID = 1

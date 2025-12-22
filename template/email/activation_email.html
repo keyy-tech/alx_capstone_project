@@ -1,0 +1,12 @@
+{% block subject %}
+Account Activation Required
+{% endblock %}
+
+{% block text_body %}
+{
+  "type": "activation",
+  "uid": "{{ uid }}",
+  "token": "{{ token }}",
+  "method": "POST"
+}
+{% endblock %}
